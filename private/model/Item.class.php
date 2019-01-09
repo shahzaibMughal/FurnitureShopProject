@@ -29,7 +29,6 @@ class Item
       self::$database = $database;
     }
 
-
     public function create(){
       $queryString = "INSERT INTO ".ITEMS_TABLE::TABLE_NAME." ";
       $queryString .= "SET ".ITEMS_TABLE::COLUMN_TITLE." = ".self::escapeString($this->getTitle()). ",";
@@ -57,7 +56,6 @@ class Item
         throw new \Exception("Insertion failed, Error: ".self::$database->error);
       }
     }
-
     public function update(){
       $queryString = "UPDATE ".ITEMS_TABLE::TABLE_NAME." ";
       $queryString .= "SET ".ITEMS_TABLE::COLUMN_TITLE." = ".self::escapeString($this->getTitle()). ",";
@@ -86,6 +84,63 @@ class Item
         throw new \Exception("Failed to Update the item, Error: ".self::$database->error);
       }
     }
+    public function delete(){
+      $queryString = "DELETE FROM ".ITEMS_TABLE::TABLE_NAME." WHERE ".ITEMS_TABLE::COLUMN_ITEM_ID." = ".self::escapeString($this->getId());
+      $result = self::$database->query($queryString);
+      if($result)
+      {
+        return true; // item successfully deleted
+      }
+      else {
+        throw new \Exception("Failed to Delete item, Error: ".$database->error);
+      }
+    }
+
+
+   static public function find_all(){
+      $sql = "SELECT * FROM ".ITEMS_TABLE::TABLE_NAME;
+      return self::find_by_sql($sql);
+     }
+   static public function find_by_id($id){
+     $sql  = "SELECT * FROM ".ITEMS_TABLE::TABLE_NAME ." ";
+     $sql .= "WHERE ".ITEMS_TABLE::COLUMN_ITEM_ID." = ".self::escapeString($id)." LIMIT 1";
+     $objectsArray = self::find_by_sql($sql);
+     return array_shift($objectsArray); // get single item
+   }
+   static public function find_by_sql($sql)  {
+         $result = self::$database->query($sql);
+         if(!$result){
+           throw new \Exception("Database Query Failed..., Query:".$sql);
+         }
+         // results into objects
+         $object_array = [];
+         while($row = $result->fetch_assoc()){
+           $object_array[] =  self::instantiate($row);
+         }
+         $result->free();
+         return $object_array;
+       }
+
+   static private function instantiate($row){
+     // echo print_r($row);
+     $item = new Item($row);
+     return $item;
+   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -109,6 +164,21 @@ class Item
       $this->setIsSpecialOffer($args[ITEMS_TABLE::COLUMN_IS_SPECIAL_OFFER] ?? 0);
 
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
