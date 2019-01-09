@@ -13,10 +13,12 @@
   require_once('validation_functions.php');
   require_once('Database/dbCredentials.php');
   require_once('model/Category.class.php');
+  require_once('model/Item.class.php');
   require_once('Utils/UploadImage.class.php');
 
   $database = dbConnect();
   Category::setDatabase($database);
+  Item::setDatabase($database);
 
 
 

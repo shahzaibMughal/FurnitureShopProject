@@ -25,12 +25,43 @@ class Item
 
     /******* Database Related
     *********************************/
+    public static function setDatabase($database){
+      self::$database = $database;
+    }
 
+
+    public function create(){
+      $queryString = "INSERT INTO ".ITEMS_TABLE::TABLE_NAME." ";
+      $queryString .= "SET ".ITEMS_TABLE::COLUMN_TITLE." = ".self::escapeString($this->getTitle()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_CATEGORY_ID." = ".self::escapeString($this->getCategoryID()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_ORIGNAL_PRICE." = ".self::escapeString($this->getOrignalPrice()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_SELLING_PRICE." = ".self::escapeString($this->getSellingPrice()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_QUANTITY_AVAILABLE." = ".self::escapeString($this->getQuantityAvailable()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_SHIPPING_METHOD." = ".self::escapeString($this->getShippingMethod()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_SHIPPING_PRICE." = ".self::escapeString($this->getShippingPrice()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_ITEM_WILL_REACHED." = ".self::escapeString($this->getItemWillReached()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_PICTURE_ID." = ".self::escapeString($this->getPictureID()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_DESCRIPTION." = ".self::escapeString($this->getDescription()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_IS_RECOMMENDED." = ".self::escapeString($this->getIsRecommended()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_IS_FEATURED." = ".self::escapeString($this->getIsFeatured()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_IS_NEW_ARRIVAL." = ".self::escapeString($this->getIsNewArrival()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_IS_SPECIAL_OFFER." = ".self::escapeString($this->getIsSpecialOffer());
+
+      // exit($queryString);
+      $result = self::$database->query($queryString);
+      if($result)
+      {
+        return true; // Item successfully created
+      }
+      else {
+        throw new \Exception("Insertion failed, Error: ".$database->error);
+      }
+    }
 
 
     /******* Constructor
     *********************************/
-    public function __construct($args){
+    public function __construct($args = []){
       $this->setID($args[ITEMS_TABLE::COLUMN_ITEM_ID] ?? null);
       $this->setTitle($args[ITEMS_TABLE::COLUMN_TITLE] ?? null);
       $this->setCategoryID($args[ITEMS_TABLE::COLUMN_CATEGORY_ID] ?? null);
@@ -38,14 +69,14 @@ class Item
       $this->setSellingPrice($args[ITEMS_TABLE::COLUMN_SELLING_PRICE] ?? null);
       $this->setQuantityAvailable($args[ITEMS_TABLE::COLUMN_QUANTITY_AVAILABLE] ?? null);
       $this->setShippingMethod($args[ITEMS_TABLE::COLUMN_SHIPPING_METHOD] ?? null);
-      $this->setShippingPrice($args[ITEMS_TABLE::COLUMN_SHIPPING_PRICE] ?? null);
+      $this->setShippingPrice($args[ITEMS_TABLE::COLUMN_SHIPPING_PRICE] ?? 0);
       $this->setItemWillReached($args[ITEMS_TABLE::COLUMN_ITEM_WILL_REACHED] ?? null);
       $this->setPictureID($args[ITEMS_TABLE::COLUMN_PICTURE_ID] ?? null);
-      $this->setDescription($args[ITEMS_TABLE::COLUMN_DESCRIPTION] ?? null);
-      $this->setIsRecommended($args[ITEMS_TABLE::COLUMN_IS_RECOMMENDED] ?? null);
-      $this->setIsFeatured($args[ITEMS_TABLE::COLUMN_IS_FEATURED] ?? null);
-      $this->setIsNewArrival($args[ITEMS_TABLE::COLUMN_IS_NEW_ARRIVAL] ?? null);
-      $this->setIsSpecialOffer($args[ITEMS_TABLE::COLUMN_IS_SPECIAL_OFFER] ?? null);
+      $this->setDescription($args[ITEMS_TABLE::COLUMN_DESCRIPTION] ?? '');
+      $this->setIsRecommended($args[ITEMS_TABLE::COLUMN_IS_RECOMMENDED] ?? 0);
+      $this->setIsFeatured($args[ITEMS_TABLE::COLUMN_IS_FEATURED] ?? 0);
+      $this->setIsNewArrival($args[ITEMS_TABLE::COLUMN_IS_NEW_ARRIVAL] ?? 0);
+      $this->setIsSpecialOffer($args[ITEMS_TABLE::COLUMN_IS_SPECIAL_OFFER] ?? 0);
 
     }
 
@@ -87,7 +118,10 @@ class Item
          return $this->orignalPrice;
     }
     public function setOrignalPrice($orignalPrice) {
-         $this->orignalPrice = $orignalPrice;
+        if(!is_numeric($orignalPrice)){
+          throw new \Exception("Price Can't be a string");
+        }
+        $this->orignalPrice = (double) $orignalPrice;
     }
 
 
@@ -95,7 +129,10 @@ class Item
          return $this->sellingPrice;
     }
     public function setSellingPrice($sellingPrice) {
-         $this->sellingPrice = $sellingPrice;
+      if(!is_numeric($sellingPrice)){
+        throw new \Exception("Price Can't be a string");
+      }
+         $this->sellingPrice = (double) $sellingPrice;
     }
 
 
@@ -119,7 +156,10 @@ class Item
          return $this->shippingPrice;
     }
     public function setShippingPrice($shippingPrice) {
-         $this->shippingPrice = $shippingPrice;
+        if(!is_numeric($shippingPrice)){
+          throw new \Exception("Price Can't be a string");
+        }
+        $this->shippingPrice = (double) $shippingPrice;
     }
 
 
@@ -181,6 +221,11 @@ class Item
 
       if($this->isValid()){
           // save or update item
+          if(!hasPresence($this->getID())){
+            $this->create();
+          }else {
+            $this->update();
+          }
       }else {
         return $this->getErrorMessages();
       }
@@ -198,16 +243,58 @@ class Item
     *******************************/
     private function isValid(){
       // do data validation
-      if(!hasPresence($this->getTitle())){
+      // if(!hasPresence()){
+      //   $this->errors[] = "";
+      // }
+
+      if(!hasPresence($this->getTitle()))     {
         $this->errors[ITEMS_TABLE::COLUMN_TITLE] = "Title Can't be empty";
+        return false;
       }
-
-
+      if(!hasPresence($this->getCategoryID()))     {
+        $this->errors[ITEMS_TABLE::COLUMN_CATEGORY_ID] = "Category ID Can't be empty";
+        return false;
+      }
+      if(!hasPresence($this->getOrignalPrice()) || $this->getOrignalPrice()<=0){
+        $this->errors[ITEMS_TABLE::COLUMN_ORIGNAL_PRICE] = "Orignal Price Can't be empty and should be > 0";
+        return false;
+      }
+      if(!hasPresence($this->getSellingPrice()) || $this->getSellingPrice()<=0){
+        $this->errors[ITEMS_TABLE::COLUMN_SELLING_PRICE] = "Selling Price Can't be empty and should be > 0";
+        return false;
+      }
+      if(!hasPresence($this->getQuantityAvailable()) || $this->getQuantityAvailable()<0){
+        $this->errors[ITEMS_TABLE::COLUMN_QUANTITY_AVAILABLE] = "Quantity Availabe Can't be empty and should be >= 0";
+        return false;
+      }
+      if(!hasPresence($this->getShippingMethod()))     {
+        $this->errors[ITEMS_TABLE::COLUMN_SHIPPING_METHOD] = "Shipping method Can't be empty";
+        return false;
+      }
+      if(!hasPresence($this->getShippingPrice()) || $this->getShippingPrice()<0){
+        $this->errors[ITEMS_TABLE::COLUMN_SHIPPING_PRICE] = "Price Can't be < 0";
+        return false;
+      }
+      if(!hasPresence($this->getItemWillReached()) || $this->getItemWillReached()<=0){
+        $this->errors[ITEMS_TABLE::COLUMN_ITEM_WILL_REACHED] = "Shipping days should be > 0";
+        return false;
+      }
+      if(!hasPresence($this->getPictureID())){
+        $this->errors[ITEMS_TABLE::COLUMN_PICTURE_ID] = "Picture id can't be null";
+        return false;
+      }
+      return true;
     }
 
 
     public function getErrorMessages(){
       return $this->errors;
+    }
+    public static function escapeString($string){
+      if(isset($string)){
+        return "'".self::$database->escape_string($string)."'";
+      }
+      return null;
     }
 
 }
