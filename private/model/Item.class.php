@@ -58,6 +58,36 @@ class Item
       }
     }
 
+    public function update(){
+      $queryString = "UPDATE ".ITEMS_TABLE::TABLE_NAME." ";
+      $queryString .= "SET ".ITEMS_TABLE::COLUMN_TITLE." = ".self::escapeString($this->getTitle()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_CATEGORY_ID." = ".self::escapeString($this->getCategoryID()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_ORIGNAL_PRICE." = ".self::escapeString($this->getOrignalPrice()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_SELLING_PRICE." = ".self::escapeString($this->getSellingPrice()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_QUANTITY_AVAILABLE." = ".self::escapeString($this->getQuantityAvailable()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_SHIPPING_METHOD." = ".self::escapeString($this->getShippingMethod()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_SHIPPING_PRICE." = ".self::escapeString($this->getShippingPrice()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_ITEM_WILL_REACHED." = ".self::escapeString($this->getItemWillReached()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_PICTURE_ID." = ".self::escapeString($this->getPictureID()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_DESCRIPTION." = ".self::escapeString($this->getDescription()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_IS_RECOMMENDED." = ".self::escapeString($this->getIsRecommended()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_IS_FEATURED." = ".self::escapeString($this->getIsFeatured()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_IS_NEW_ARRIVAL." = ".self::escapeString($this->getIsNewArrival()). ",";
+      $queryString .= ITEMS_TABLE::COLUMN_IS_SPECIAL_OFFER." = ".self::escapeString($this->getIsSpecialOffer())." ";
+      $queryString .=  "WHERE ".ITEMS_TABLE::COLUMN_ITEM_ID." = ".self::escapeString($this->getId());
+
+      // exit($queryString);
+      $result = self::$database->query($queryString);
+      if($result)
+      {
+        return true; // Item successfully updated
+      }
+      else {
+        throw new \Exception("Failed to Update the item, Error: ".self::$database->error);
+      }
+    }
+
+
 
     /******* Constructor
     *********************************/
