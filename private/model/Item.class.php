@@ -54,7 +54,7 @@ class Item
         return true; // Item successfully created
       }
       else {
-        throw new \Exception("Insertion failed, Error: ".$database->error);
+        throw new \Exception("Insertion failed, Error: ".self::$database->error);
       }
     }
 
