@@ -1,0 +1,33 @@
+.container{
+  padding: 0 0 0 30%;;
+
+}
+
+
+input[type='file']{
+  display: none;
+}
+.fileButton{
+  display: block;
+}
+
+#headerImageContainer{
+  width: 200px;
+  height: 200px;
+  /* background: pink; */
+}
+
+#headerImageContainer img{
+  width: 100%;
+}
+
+#productGallery ul li{
+  list-style: none;
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  /* background: pink; */
+}
+#productGallery ul li img{
+  width: 100%;
+}
